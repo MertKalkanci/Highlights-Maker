@@ -50,11 +50,30 @@ async def highlight(ctx: discord.message, url: str, *keywords, length=LENTGH, sk
     return
 
 @bot.command(name="adduser",help="Adds user to create highlights from given youtube video")
-async def adduser(ctx: discord.message, url: str, *keywords, length=LENTGH, skiprate=SKIP_RATE, temperature=TEMPERATURE):
-  if ctx.message.author.guild_permissions.administrator == False or ctx.Message.author.id != load_dict_from_json("creator.json")['1']:
-    await ctx.send("You do not have permission to do that!")
-    return
+async def adduser(ctx: discord.message, user: discord.Member):
+    if ctx.message.author.guild_permissions.administrator == False or ctx.Message.author.id != load_dict_from_json("creator.json")['1']:
+        await ctx.send("You do not have permission to do that!")
+        return
       
+    users = load_dict_from_json("user.json")  
+    users[str(user.id)] = user.id
+    
+    save_dict_to_json("user.json",users)
+    
+    await ctx.send(f"User {user.name} added")
+
+@bot.command(name="removeuser",help="Removes user to create highlights from given youtube video")
+async def removeuser(ctx: discord.message, user: discord.Member):
+    if ctx.message.author.guild_permissions.administrator == False or ctx.Message.author.id != load_dict_from_json("creator.json")['1']:
+        await ctx.send("You do not have permission to do that!")
+        return
+      
+    users = load_dict_from_json("user.json")  
+    users.pop(str(user.id))
+    
+    save_dict_to_json("user.json",users)
+    
+    await ctx.send(f"User {user.name} removed")
   
 
 bot.run(open("discord", "r").read())
