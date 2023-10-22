@@ -1,0 +1,7 @@
+openai-whisper 
+pytube 
+moviepy 
+pydub 
+openai 
+pysrt
+nextcord
