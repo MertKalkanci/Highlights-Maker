@@ -2,7 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
-
+.vs
 # C extensions
 *.so
 
@@ -155,3 +155,4 @@ cython_debug/
 *.srt
 discord
 openai
+*.json
