@@ -1,4 +1,6 @@
+﻿# -*- coding:utf-8 -*-
 from calendar import c
+from numpy import unicode_
 from pytube import YouTube
 from moviepy.editor import *
 from pydub import AudioSegment
@@ -17,10 +19,11 @@ from ai import gpt,trasncribe
 from flask import Flask, send_file
 import threading
 import json
+import requests
 #from flask_limiter import Limiter
 #from flask_limiter.util import get_remote_address
 
-IP = "http://localhost:5000"
+IP = f"http://{requests.get('https://checkip.amazonaws.com').text.strip()}:5000"
 LINK="https://www.youtube.com/watch?v=3ryID_SwU5E"
 SAVE_PATH="/temp/" 
 
@@ -28,15 +31,31 @@ MAX_URL_IN_MESSAGE = 10
 LENGTH=20 
 SKIP_RATE=15 
 TEMPERATURE = 0.35 
+LANGUAGE =  "en"
+
+TEMPERATURES = {}
+LENGTHS = {}
+SKIP_RATES = {}
+LANGUAGES = {}
 
 KEY_WORDS = []
 
-MAIN_PROMPT_FIRST_PART = """
-You are a bot that makes decisions about a youtube shorts or tiktok video. If you think that the communication given below won't get 1 million clicks don't reccomend according to the rules given below
-IF a conversation is worth a youtube shorts Highlight just answer YES else say NO
-some keywords for it: 
+MAIN_PROMPT_FIRST_PART_TR = """
+Videodaki diyaloglardan yola çıkarak klipler oluşturan bir botsun. Eğer aşağıda verilen diyalog izlenmeye değer ya da anahtar kelimeler ile ilişkiliyse aşağıdaki kurallara göre öneride bulun
+Eğer bir diyalog izlenmeye değerse YES degilse NO de
+Anahtar kelimeler:
 """
-MAIN_PROMPT_SECOND_PART = """
+MAIN_PROMPT_SECOND_PART_TR = """
+Aşağıda bazı diyaloglar verilecek
+Diyaloglar:
+
+"""
+MAIN_PROMPT_FIRST_PART_EN = """
+You are a bot that makes decisions to create clips from video subtitles. If you think that the communication given below is worth to watch or relative to keywords reccomend according to the rules given below
+IF a conversation is worth YES else say NO
+Some keywords for it: 
+"""
+MAIN_PROMPT_SECOND_PART_EN = """
 Some communication will be given in the bottom
 Conversations:
 
@@ -58,9 +77,46 @@ async def on_connect():
 print(os.getcwd())
 
 
+@bot.command()
+async def configure(ctx: discord.message, temperature=TEMPERATURE, length=LENGTH, language=LANGUAGE):
+    userid = str(ctx.author.id)
+    serverid = str(ctx.guild.id)
+   
+    with open("user.json", "r") as f:
+        data = json.load(f)  
+        
+    if data.get(userid) is None:
+        await ctx.send("You do not have permission to do that!")
+        return
+    
+    if str(temperature).lower() == "default":
+        temperature = TEMPERATURE
+    else:
+        temperature = float(temperature)
+    
+    if str(length).lower() == "default":
+        length = LENGTH
+    else:
+        length = int(length)
+        
+    if str(language).lower() == "default":
+       language = LANGUAGE
+       
+    skiprate = int(length/2)
+    
+    TEMPERATURES[serverid] = temperature
+    LENGTHS[serverid] = length
+    SKIP_RATES[serverid] = skiprate
+    LANGUAGES[serverid] = language.lower()
+     
+    await ctx.send(f"Temperature set to {temperature} and dialogue length set to {length} and language set to {language}")
+    
+
+    
+    
 
 @bot.command()
-async def highlight(ctx: discord.message, url=LINK,length=LENGTH, skiprate=SKIP_RATE, temperature=TEMPERATURE, *keywords):
+async def highlight(ctx: discord.message, url=LINK, *keywords):
     userid = str(ctx.author.id)
     
     with open("user.json", "r") as f:
@@ -70,6 +126,27 @@ async def highlight(ctx: discord.message, url=LINK,length=LENGTH, skiprate=SKIP_
         await ctx.send("You do not have permission to do that!")
         return
     
+    if TEMPERATURES.get(str(ctx.guild.id)) is None:
+       temperature=TEMPERATURE
+    else:
+       temperature=TEMPERATURES[str(ctx.guild.id)]
+       
+    if LENGTHS.get(str(ctx.guild.id)) is None:
+       length = LENGTH
+    else:
+       length = LENGTHS[str(ctx.guild.id)]
+       
+    if SKIP_RATES.get(str(ctx.guild.id)) is None:
+        skiprate = SKIP_RATE
+    else:
+        skiprate = SKIP_RATES[str(ctx.guild.id)]
+    
+    if LANGUAGES.get(str(ctx.guild.id)) is None:
+       language = LANGUAGE
+    else:
+       language = LANGUAGES[str(ctx.guild.id)]
+    
+    
     #user preferences debug
     print(f"User {ctx.author.name} wants to create a highlight with the following preferences:")
     print(f"URL: {url}")
@@ -77,6 +154,14 @@ async def highlight(ctx: discord.message, url=LINK,length=LENGTH, skiprate=SKIP_
     print(f"Length: {length}")
     print(f"Skip Rate: {skiprate}")
     print(f"Temperature: {temperature}")
+    print(f"Language: {language}")
+        
+    language = language.lower()
+    
+    if language == "tr":
+       MAIN_PROMPT = MAIN_PROMPT_FIRST_PART_TR + str(keywords) + MAIN_PROMPT_SECOND_PART_TR
+    else:
+       MAIN_PROMPT = MAIN_PROMPT_FIRST_PART_EN + str(keywords) + MAIN_PROMPT_SECOND_PART_EN
 
 
     sentMessage = await ctx.send("Creating Highlights...")
@@ -84,7 +169,6 @@ async def highlight(ctx: discord.message, url=LINK,length=LENGTH, skiprate=SKIP_
     
     await sentMessage.edit(content="Downloading Video...")
 
-    MAIN_PROMPT = MAIN_PROMPT_FIRST_PART + str(keywords) + MAIN_PROMPT_SECOND_PART
 #region download
 
     try:
@@ -203,7 +287,7 @@ async def highlight(ctx: discord.message, url=LINK,length=LENGTH, skiprate=SKIP_
       if(os.path.isfile(f"output{userid}{i}.srt") ):
         os.remove(f"output{userid}{i}.srt")
       if(os.path.isfile(f"output{userid}{i}.mp4")):
-        if(os.path.isfile(f"output{userid}{i + 1}.mp4")):
+        if(os.path.isfile(f"output{userid}{i + length}.mp4")):
           video_file_list = [f"output{userid}{i}.mp4",f"output{i + 1}.mp4"]
 
           copy_subtitles = subtitles[i].copy()
@@ -269,7 +353,14 @@ async def highlight(ctx: discord.message, url=LINK,length=LENGTH, skiprate=SKIP_
             await ctx.send("\n".join(links[i:i+MAX_URL_IN_MESSAGE]))
             await ctx.send("\n".join(linksrt[i:i+MAX_URL_IN_MESSAGE]))
             
+            
 #endregion
+    #delete video files called {userid}.mp4 and {userid}.mp3
+    
+    #delete single file
+    
+    
+
 
 @bot.command()
 async def adduser(ctx: discord.message, user: discord.Member):    
