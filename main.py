@@ -359,9 +359,6 @@ async def highlight(ctx: discord.message, url=LINK, *keywords):
     
     #delete single file
     
-    
-
-
 @bot.command()
 async def adduser(ctx: discord.message, user: discord.Member):    
     with open("creator.json", "r") as f:
