@@ -20,6 +20,7 @@ from flask import Flask, send_file
 import threading
 import json
 import requests
+import encodings
 #from flask_limiter import Limiter
 #from flask_limiter.util import get_remote_address
 
@@ -29,7 +30,7 @@ SAVE_PATH="/temp/"
 
 MAX_URL_IN_MESSAGE = 10
 LENGTH=20 
-SKIP_RATE=15 
+SKIP_RATE=10
 TEMPERATURE = 0.35 
 LANGUAGE =  "en"
 
@@ -40,16 +41,6 @@ LANGUAGES = {}
 
 KEY_WORDS = []
 
-MAIN_PROMPT_FIRST_PART_TR = """
-Videodaki diyaloglardan yola çıkarak klipler oluşturan bir botsun. Eğer aşağıda verilen diyalog izlenmeye değer ya da anahtar kelimeler ile ilişkiliyse aşağıdaki kurallara göre öneride bulun
-Eğer bir diyalog izlenmeye değerse YES degilse NO de
-Anahtar kelimeler:
-"""
-MAIN_PROMPT_SECOND_PART_TR = """
-Aşağıda bazı diyaloglar verilecek
-Diyaloglar:
-
-"""
 MAIN_PROMPT_FIRST_PART_EN = """
 You are a bot that makes decisions to create clips from video subtitles. If you think that the communication given below is worth to watch or relative to keywords reccomend according to the rules given below
 IF a conversation is worth YES else say NO
@@ -60,6 +51,8 @@ Some communication will be given in the bottom
 Conversations:
 
 """
+
+PROMPTS_PATH = "prompts/"
 
 intents = discord.Intents.default()
 intents.members = True
@@ -158,12 +151,22 @@ async def highlight(ctx: discord.message, url=LINK, *keywords):
         
     language = language.lower()
     
-    if language == "tr":
-       MAIN_PROMPT = MAIN_PROMPT_FIRST_PART_TR + str(keywords) + MAIN_PROMPT_SECOND_PART_TR
+    
+    print(f"{PROMPTS_PATH}start_{language}.txt")
+
+    if os.path.isfile(f"{PROMPTS_PATH}start_{language}.txt"):
+       with open(f"{PROMPTS_PATH}start_{language}.txt", "r", encoding = 'utf-8') as f:
+            MAIN_PROMPT_FIRST_PART = f.read()
+       with open(f"{PROMPTS_PATH}end_{language}.txt", "r", encoding = 'utf-8') as f:
+            MAIN_PROMPT_LAST_PART = f.read()
+       
+       MAIN_PROMPT = MAIN_PROMPT_FIRST_PART + str(keywords) + MAIN_PROMPT_LAST_PART
+       
+       
     else:
        MAIN_PROMPT = MAIN_PROMPT_FIRST_PART_EN + str(keywords) + MAIN_PROMPT_SECOND_PART_EN
 
-
+    print(MAIN_PROMPT)
     sentMessage = await ctx.send(f"Creating Highlights with this settings:\nKeywords: {keywords}\nURL: {url}\nDialogue Length: {length}\nTemperature: {temperature}\nLanguage: {language}")
     sleep(5)
     
