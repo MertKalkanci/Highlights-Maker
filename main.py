@@ -164,8 +164,8 @@ async def highlight(ctx: discord.message, url=LINK, *keywords):
        MAIN_PROMPT = MAIN_PROMPT_FIRST_PART_EN + str(keywords) + MAIN_PROMPT_SECOND_PART_EN
 
 
-    sentMessage = await ctx.send("Creating Highlights...")
-    sleep(2)
+    sentMessage = await ctx.send(f"Creating Highlights with this settings:\nKeywords: {keywords}\nURL: {url}\nKeywords: {keywords}\nDialogue Length: {length}\nTemperature: {temperature}\nLanguage: {language}")
+    sleep(5)
     
     await sentMessage.edit(content="Downloading Video...")
 
@@ -288,18 +288,18 @@ async def highlight(ctx: discord.message, url=LINK, *keywords):
         os.remove(f"output{userid}{i}.srt")
       if(os.path.isfile(f"output{userid}{i}.mp4")):
         if(os.path.isfile(f"output{userid}{i + length}.mp4")):
-          video_file_list = [f"output{userid}{i}.mp4",f"output{i + 1}.mp4"]
+          video_file_list = [f"output{userid}{i}.mp4",f"output{userid}{i + length}.mp4"]
 
           copy_subtitles = subtitles[i].copy()
 
           print(copy_subtitles)
 
-          if subtitles[i-1] != {} or subtitles[i-1] != None:
+          if subtitles[i-length] != {} or subtitles[i-length] != None:
             print("merging subtitles")
-            subtitles[i] = subtitles[i-1].copy()
+            subtitles[i] = subtitles[i-length].copy()
 
             for key in copy_subtitles:
-              subtitles[i + 1][str(int(key) + 9)] = copy_subtitles[key]
+              subtitles[i + length][str(int(key) + 9)] = copy_subtitles[key]
 
 
           print("Merging: " + str(video_file_list))
