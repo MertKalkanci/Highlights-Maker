@@ -44,6 +44,25 @@ KEY_WORDS = []
 MAIN_PROMPT_FIRST_PART_EN = """
 You are a bot that makes decisions to create clips from video subtitles. If you think that the communication given below is worth to watch or relative to keywords reccomend according to the rules given below
 IF a conversation is worth YES else say NO
+Crop the video according to the rules given below
+Write the start row number and end row number of the conversation you want to crop
+Example Answer 1:
+####
+YES
+START: 1
+END: 3
+####
+Example Answer 2:
+####
+NO
+####
+Example Answer 3:
+####
+YES
+START: 3
+END: 5
+####
+!!NOTE FIRST ROW IS 1!!
 Some keywords for it: 
 """
 MAIN_PROMPT_SECOND_PART_EN = """
@@ -151,22 +170,19 @@ async def highlight(ctx: discord.message, url=LINK, *keywords):
         
     language = language.lower()
     
-    
-    print(f"{PROMPTS_PATH}start_{language}.txt")
-
     if os.path.isfile(f"{PROMPTS_PATH}start_{language}.txt"):
        with open(f"{PROMPTS_PATH}start_{language}.txt", "r", encoding = 'utf-8') as f:
             MAIN_PROMPT_FIRST_PART = f.read()
        with open(f"{PROMPTS_PATH}end_{language}.txt", "r", encoding = 'utf-8') as f:
-            MAIN_PROMPT_LAST_PART = f.read()
+            PROMPT_LAST_PART = f.read()
        
-       MAIN_PROMPT = MAIN_PROMPT_FIRST_PART + str(keywords) + MAIN_PROMPT_LAST_PART
+       MAIN_PROMPT = MAIN_PROMPT_FIRST_PART + str(keywords) + PROMPT_LAST_PART
        
        
     else:
        MAIN_PROMPT = MAIN_PROMPT_FIRST_PART_EN + str(keywords) + MAIN_PROMPT_SECOND_PART_EN
 
-    print(MAIN_PROMPT)
+
     sentMessage = await ctx.send(f"Creating Highlights with this settings:\nKeywords: {keywords}\nURL: {url}\nDialogue Length: {length}\nTemperature: {temperature}\nLanguage: {language}")
     sleep(5)
     
@@ -277,49 +293,34 @@ async def highlight(ctx: discord.message, url=LINK, *keywords):
           
           await sentMessage.edit(content=f"Creating Highlights & Subtitle Files...\n%{100*i/len(result['segments'])}")
 
-          if response == "YES":
+          if response.startswith("YES"):
             print(f"Start: {start}\nEnd: {end}")
-            ffmpeg_extract_subclip(mp4filepath, start, end, targetname=f"output{userid}{i}.mp4")
+            
+            #part 2, process the start and end position
+            crop_result = response
+            
+            #Process the result result is like:
+            #START: 1
+            #END: 2
+            
+            crop_result = crop_result.split("\n")
+            
+            
+            if len(crop_result) >= 3:
+               if crop_result[0].startswith("START:"):
+                  start = result['segments'][i + int(crop_result[1].split(":")[1]) - 1]['start']
+               if crop_result[1].startswith("END:"):
+                  end =  result['segments'][i + int(crop_result[1].split(":")[1]) - 1]['start']
+             
+            #crop the video
+            
+            ffmpeg_extract_subclip(mp4filepath, start, end, targetname=f"output{userid}{i+ + int(crop_result[1].split(':')[1]) - 1}.mp4")
+             
+            
+
     except Exception as e:
         print(f"Some Error while creating highlights: {e}")
         await sentMessage.edit(content="Some Error while creating highlights list!\nContinuing with the ones generated")
-
-
-    files = os.listdir()
-    for i in range(0,len(result['segments'])):
-      if(os.path.isfile(f"output{userid}{i}.srt") ):
-        os.remove(f"output{userid}{i}.srt")
-      if(os.path.isfile(f"output{userid}{i}.mp4")):
-        if(os.path.isfile(f"output{userid}{i + length}.mp4")):
-          video_file_list = [f"output{userid}{i}.mp4",f"output{userid}{i + length}.mp4"]
-
-          copy_subtitles = subtitles[i].copy()
-
-          print(copy_subtitles)
-
-          if subtitles[i-length] != {} or subtitles[i-length] != None:
-            print("merging subtitles")
-            subtitles[i] = subtitles[i-length].copy()
-
-            for key in copy_subtitles:
-              subtitles[i + length][str(int(key) + 9)] = copy_subtitles[key]
-
-
-          print("Merging: " + str(video_file_list))
-
-          loaded_video_list = []
-
-          for video in video_file_list:
-              loaded_video_list.append(VideoFileClip(video))
-
-          final_clip = concatenate_videoclips(loaded_video_list)
-
-          merged_video_name = video_file_list[1]
-
-
-          final_clip.write_videofile(f"{merged_video_name}")
-
-          os.remove(video_file_list[0])
           
     files = os.listdir()
     for i in range(0,len(result['segments'])):
@@ -347,8 +348,8 @@ async def highlight(ctx: discord.message, url=LINK, *keywords):
     linksrt = []
     for i in range(0,len(result['segments'])):
         if(os.path.isfile(f"output{userid}{i}.mp4")):
-            links.append(f"{IP}/download/{userid}/{i}/0")
-            linksrt.append(f"{IP}/download/{userid}/{i}/1")             
+            links.append(f"{IP}/download/{userid}/{i}/1")
+            linksrt.append(f"{IP}/download/{userid}/{i}/0")             
         
     for i in range(0,len(links)):
         if i % MAX_URL_IN_MESSAGE == 0:
