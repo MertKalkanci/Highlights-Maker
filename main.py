@@ -164,7 +164,7 @@ async def highlight(ctx: discord.message, url=LINK, *keywords):
        MAIN_PROMPT = MAIN_PROMPT_FIRST_PART_EN + str(keywords) + MAIN_PROMPT_SECOND_PART_EN
 
 
-    sentMessage = await ctx.send(f"Creating Highlights with this settings:\nKeywords: {keywords}\nURL: {url}\nKeywords: {keywords}\nDialogue Length: {length}\nTemperature: {temperature}\nLanguage: {language}")
+    sentMessage = await ctx.send(f"Creating Highlights with this settings:\nKeywords: {keywords}\nURL: {url}\nDialogue Length: {length}\nTemperature: {temperature}\nLanguage: {language}")
     sleep(5)
     
     await sentMessage.edit(content="Downloading Video...")
