@@ -154,7 +154,7 @@ def highlight(videopath,temperature=TEMPERATURE,length=LENGTH,language=LANGUAGE,
                if crop_result[1].startswith("START:"):
                   start = result['segments'][i + int(crop_result[1].split(":")[1]) - 1]['start']
                if crop_result[2].startswith("END:"):
-                  end =  result['segments'][i + int(crop_result[1].split(":")[1]) - 1]['start']
+                  end =  result['segments'][i + int(crop_result[2].split(":")[1]) - 1]['end']
              
             #crop the video
             
