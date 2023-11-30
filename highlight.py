@@ -49,9 +49,9 @@ OUTPUT_PATH = "output/"
 def highlight(videopath,temperature=TEMPERATURE,length=LENGTH,language=LANGUAGE, keywords=["viral","funny","highlights"]):
     for file in os.listdir(OUTPUT_PATH):
         if file.endswith(".mp4"):
-            os.remove(file)
+            os.remove(OUTPUT_PATH+file)
         if file.endswith(".srt"):
-            os.remove(file)
+            os.remove(OUTPUT_PATH+file)
 
     skiprate = length * 2 / 3
 

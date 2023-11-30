@@ -9,4 +9,4 @@ def download(link,save_path):
             file_path = yt.streams.filter(progressive=True, file_extension='mp4').order_by('resolution').filter(resolution="720p").first().download(save_path)
         except:
             return 0
-    return file_path
+    return 1
