@@ -4,6 +4,4 @@ moviepy
 pydub 
 openai 
 pysrt
-nextcord
-flask
-Flask-Limiter
+gradio
