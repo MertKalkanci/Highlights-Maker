@@ -108,7 +108,8 @@ def highlight(videopath,temperature=TEMPERATURE,length=LENGTH,language=LANGUAGE,
 
           start = 0.0
           end = 0.0
-
+          start_index = 0
+          end_index = 0
 
           print("=================")
 
@@ -116,20 +117,10 @@ def highlight(videopath,temperature=TEMPERATURE,length=LENGTH,language=LANGUAGE,
             start = result['segments'][i]['start']
 
             for j in range (0,LENGTH):
-              subtitles[i][str(j)] = SubtitleVariable()
-
               text = result['segments'][(i + j)]['text']
-              subtitles[i][str(j)].text = text
+              prompt += text + "\n"
 
-              subtitles[i][str(j)].start = result['segments'][(i + j)]['start']
-
-              sub_end = result['segments'][(i + j)]['end']
-              subtitles[i][str(j)].end = sub_end
-
-              print(text)
-              prompt = prompt + text
-              end = sub_end
-
+          print(prompt)
           print("\n")
           response = gpt(MAIN_PROMPT,prompt,temperature)
           print(response)
@@ -153,14 +144,27 @@ def highlight(videopath,temperature=TEMPERATURE,length=LENGTH,language=LANGUAGE,
             if len(crop_result) >= 3:
                if crop_result[1].startswith("START:"):
                   start = result['segments'][i + int(crop_result[1].split(":")[1]) - 1]['start']
+                  start_index = int(crop_result[1].split(":")[1]) - 1
                if crop_result[2].startswith("END:"):
                   end =  result['segments'][i + int(crop_result[2].split(":")[1]) - 1]['end']
+                  end_index = int(crop_result[2].split(":")[1]) - 1
              
             #crop the video
             
             ffmpeg_extract_subclip(videopath, start, end, targetname=f"output{i+ + int(crop_result[1].split(':')[1]) - 1}.mp4")
-             
             
+            #create the subtitle array
+
+            for j in range(start_index,end_index):
+              subtitles[i][str(j)] = SubtitleVariable()
+
+              text = result['segments'][(i + j)]['text']
+              subtitles[i][str(j)].text = text
+
+              subtitles[i][str(j)].start = result['segments'][(i + j)]['start']
+
+              sub_end = result['segments'][(i + j)]['end']
+              subtitles[i][str(j)].end = sub_end
 
     except Exception as e:
         print(f"Some Error while creating highlights: {e}")
@@ -183,9 +187,10 @@ def highlight(videopath,temperature=TEMPERATURE,length=LENGTH,language=LANGUAGE,
 
           file.save(f"output{i}.srt")
 
+    #move the file to output folder using shutil
+    
     for i in range(0,len(result['segments'])):
       if(os.path.isfile(f"output{i}.mp4")):
-        #move the file to output folder using shutil
         shutil.move(f"output{i}.mp4",f"{OUTPUT_PATH}output{i}.mp4")
         shutil.move(f"output{i}.srt",f"{OUTPUT_PATH}output{i}.srt")
     
