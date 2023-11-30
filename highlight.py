@@ -53,7 +53,7 @@ def highlight(videopath,temperature=TEMPERATURE,length=LENGTH,language=LANGUAGE,
         if file.endswith(".srt"):
             os.remove(OUTPUT_PATH+file)
 
-    skiprate = length * 2 / 3
+    skiprate = length * 2 // 3
 
     #user preferences debug
     print(f"Video path: {videopath}")
@@ -151,9 +151,9 @@ def highlight(videopath,temperature=TEMPERATURE,length=LENGTH,language=LANGUAGE,
             
             
             if len(crop_result) >= 3:
-               if crop_result[0].startswith("START:"):
+               if crop_result[1].startswith("START:"):
                   start = result['segments'][i + int(crop_result[1].split(":")[1]) - 1]['start']
-               if crop_result[1].startswith("END:"):
+               if crop_result[2].startswith("END:"):
                   end =  result['segments'][i + int(crop_result[1].split(":")[1]) - 1]['start']
              
             #crop the video
