@@ -46,14 +46,15 @@ Conversations:
 PROMPTS_PATH = "prompts/"
 OUTPUT_PATH = "output/"
 
-def highlight(videopath,temperature=TEMPERATURE,length=LENGTH,language=LANGUAGE, keywords=["viral","funny","highlights"]):
+def highlight(videopath,temperature=TEMPERATURE,length=LENGTH,language=LANGUAGE, keywords="viral,funny,highlights"):
+    keywords = keywords.split(",")
     for file in os.listdir(OUTPUT_PATH):
         if file.endswith(".mp4"):
             os.remove(OUTPUT_PATH+file)
         if file.endswith(".srt"):
             os.remove(OUTPUT_PATH+file)
 
-    skiprate = length * 2 // 3
+    skiprate = length
 
     #user preferences debug
     print(f"Video path: {videopath}")
