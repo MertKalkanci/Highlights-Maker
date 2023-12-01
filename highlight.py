@@ -169,7 +169,7 @@ def highlight(videopath,temperature=TEMPERATURE,length=LENGTH,language=LANGUAGE,
 
     except Exception as e:
         print(f"Some Error while creating highlights: {e}")
-        return 0
+        return "Error: " + str(e)
           
     files = os.listdir()
     for i in range(0,len(result['segments'])):
@@ -197,4 +197,4 @@ def highlight(videopath,temperature=TEMPERATURE,length=LENGTH,language=LANGUAGE,
     
     os.remove(mp3filepath)
 
-    return 1
+    return "Success Look at the output folder"
