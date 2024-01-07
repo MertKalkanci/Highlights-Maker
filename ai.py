@@ -6,16 +6,18 @@ from llama_cpp import Llama
 model_audio = whisper.load_model("base")
 
 class llm_manager():
-  def ___init___(self, llm="OPENAI", path=""):
+  def __init__(self, llm="OPENAI", path=""):
     if llm == "OPENAI":
       self.client = OpenAI(api_key=open("openai", "r").read())
+      self.type = "OPENAI"
     else:
       self.llm = Llama(path)
+      self.type = "LOCAL GGUF"
 
   def generate(self, system, chat, temperature):
-    if self.llm == "OPENAI":
+    if self.type == "OPENAI":
       return self.gpt(system, chat, temperature)
-    elif self.llm == "LOCAL GGUF":
+    elif self.type == "LOCAL GGUF":
       return self.llama(system, chat)
 
   def gpt(self, system, chat, temperature):
