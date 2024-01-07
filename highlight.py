@@ -6,7 +6,7 @@ from moviepy.editor import VideoFileClip
 from time import sleep
 import pysrt
 import shutil
-from ai import gpt,trasncribe
+from ai import llm_manager,trasncribe
 
 LENGTH=27 
 SKIP_RATE=10
@@ -46,7 +46,7 @@ Conversations:
 PROMPTS_PATH = "prompts/"
 OUTPUT_PATH = "output/"
 
-def highlight(videopath,temperature=TEMPERATURE,length=LENGTH,language=LANGUAGE, keywords="viral,funny,highlights"):
+def highlight(videopath,temperature=TEMPERATURE,length=LENGTH,language=LANGUAGE, keywords="viral,funny,highlights", ai="OPENAI", ai_path=""):
     keywords = keywords.split(",")
     for file in os.listdir(OUTPUT_PATH):
         if file.endswith(".mp4"):
@@ -89,7 +89,7 @@ def highlight(videopath,temperature=TEMPERATURE,length=LENGTH,language=LANGUAGE,
 
     result = trasncribe(mp3filepath)
     
-
+    my_llm = llm_manager(ai, ai_path)
 
     try:
         class SubtitleVariable():
@@ -123,7 +123,9 @@ def highlight(videopath,temperature=TEMPERATURE,length=LENGTH,language=LANGUAGE,
 
           print(prompt)
           print("\n")
-          response = gpt(MAIN_PROMPT,prompt,temperature)
+
+          response = my_llm.generate(MAIN_PROMPT,prompt,temperature)
+          
           print(response)
           print("=================")
 
