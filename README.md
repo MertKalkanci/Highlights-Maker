@@ -12,9 +12,9 @@ If you find this useful, please give it a star to show your support for this pro
 ## To - Do
 
 - [X] Exporting transcripts as .srt files
-- [ ] Adding UI selection support to select diffrent ChatGPT & Whisper models
-- [ ] Adding support of diffrent LLM's such as Llama 2, Mistral, Falcon etc.
-- [ ] Automatically buning transcripts as subtitles to the video
+- [X] Adding UI selection support to select diffrent ChatGPT & Whisper models
+- [X] Adding support of diffrent LLM's such as Llama 2, Mistral, Falcon etc.
+- [ ] Automatically burning transcripts as subtitles to the video
 - [ ] Optimising prompts
 - [ ] More language support
 - [ ] Automatic environment manager shell files
