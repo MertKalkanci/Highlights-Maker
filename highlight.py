@@ -46,6 +46,9 @@ Conversations:
 PROMPTS_PATH = "prompts/"
 OUTPUT_PATH = "output/"
 
+if os.path.isdir(OUTPUT_PATH) == False:
+    os.mkdir(OUTPUT_PATH)
+
 def highlight(videopath,temperature=TEMPERATURE,length=LENGTH,language=LANGUAGE, keywords="viral,funny,highlights", ai="OPENAI", ai_path=""):
     keywords = keywords.split(",")
     for file in os.listdir(OUTPUT_PATH):
