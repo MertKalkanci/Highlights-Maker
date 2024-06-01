@@ -41,9 +41,10 @@ pip install -r requirements.txt
 3)
   A) If you plan to use ChatGPT paste your API key into a file named `openai`
   B) If you plan to use an gguf file compatible with llama.cpp, install llama.cpp into `Highlights-Maker` folder and move your .gguf file into the project folder
-5) Run main.py from the virtual environment you created
-6) Select your AI type and select .gguf file if you are not using OpenAI
-7) Upload video file into `Highlights-Maker` to select or download via youtube link on youtube tab
+
+4) Run main.py from the virtual environment you created
+5) Select your AI type and select .gguf file if you are not using OpenAI
+6) Upload video file into `Highlights-Maker` to select or download via youtube link on youtube tab
 (Use `--share` option to make gradio interface public)
 
 
